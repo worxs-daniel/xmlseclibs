@@ -1037,6 +1037,39 @@ class XMLSecurityKey
         }
         $objKey->isEncrypted = true;
         $objKey->encryptedCtx = $objenc;
+
+        if ($objKey->getAlgorithm() === self::RSA_OAEP) {
+            $doc = $element->ownerDocument;
+            if ($doc) {
+                $xpath = new \DOMXPath($doc);
+                $xpath->registerNamespace('xenc', 'http://www.w3.org/2001/04/xmlenc#');
+                $xpath->registerNamespace('xenc11', 'http://www.w3.org/2009/xmlenc11#');
+
+                $mgfNodes = $xpath->query('.//xenc11:MGF', $element);
+                $digestNodes = $xpath->query('.//xenc:DigestMethod', $element);
+
+                $mgfAlg = $mgfNodes->length > 0 ? $mgfNodes->item(0)->getAttribute('Algorithm') : null;
+                $digestAlg = $digestNodes->length > 0 ? $digestNodes->item(0)->getAttribute('Algorithm') : null;
+
+                $hashUrl = $mgfAlg ?: $digestAlg;
+                if ($hashUrl) {
+                    $digestMap = [
+                        'http://www.w3.org/2009/xmlenc11#mgf1sha256' => 'sha256',
+                        'http://www.w3.org/2001/04/xmlenc#sha256' => 'sha256',
+                        'http://www.w3.org/2009/xmlenc11#mgf1sha384' => 'sha384',
+                        'http://www.w3.org/2001/04/xmldsig-more#sha384' => 'sha384',
+                        'http://www.w3.org/2009/xmlenc11#mgf1sha512' => 'sha512',
+                        'http://www.w3.org/2001/04/xmlenc#sha512' => 'sha512',
+                        'http://www.w3.org/2009/xmlenc11#mgf1sha1' => 'sha1',
+                        'http://www.w3.org/2001/04/xmlenc#sha1' => 'sha1',
+                    ];
+                    if (isset($digestMap[$hashUrl])) {
+                        $objKey->cryptParams['digest'] = $digestMap[$hashUrl];
+                    }
+                }
+            }
+        }
+
         XMLSecEnc::staticLocateKeyInfo($objKey, $element, $depth, $allowRSA15);
         return $objKey;
     }

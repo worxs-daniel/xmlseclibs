@@ -762,6 +762,11 @@ class XMLSecEnc
         }
         $encmeth = $nodeset->item(0);
         if (!$encmeth) {
+            $query = ".//*[local-name()='KeyInfo' and namespace-uri()='".XMLSecurityDSig::XMLDSIGNS."']";
+            $nodeset = $xpath->query($query, $node);
+            $encmeth = $nodeset->item(0);
+        }
+        if (!$encmeth) {
             /* No KeyInfo in EncryptedData / EncryptedKey. */
             return $objBaseKey;
         }
