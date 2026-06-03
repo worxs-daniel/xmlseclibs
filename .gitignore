@@ -1,3 +1,5 @@
+.idea
+
 composer.lock
 /.cursor/
 tests/sign-c14-comments.xml
