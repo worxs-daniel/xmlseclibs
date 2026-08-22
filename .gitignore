@@ -1,4 +1,5 @@
 composer.lock
+/.cursor/
 tests/sign-c14-comments.xml
 tests/sign-empty-uri.xml
 tests/sign-sha256-rsa-sha256-test.xml
